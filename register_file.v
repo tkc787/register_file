@@ -14,11 +14,6 @@ module binary_decoder (output reg [15:0] O, input [3:0] D, input Ld);
 	end
 endmodule
 
-// module Mux_16_1 (output reg [31:0] Y, input [3:0] S, input [31:0] data[0:15]);
-// 	always @ (S)
-// 		Y = data[S];
-// endmodule
-
 module Register (output reg [31:0] Q, input [31:0] D, input clk, ld);
 	always @ (posedge clk, ld)
 		if(clk && ld)
@@ -39,14 +34,20 @@ module register_test;
 		clk = 1'b0;
 		ld = 1'b1;
 		// forever #25 D = D + 'h1;
-		repeat (10) #50 begin 
-			clk = ~clk;
-			D = D + 'h1
+		repeat (20) begin 
+			#5 clk = ~clk;
+			if(clk == 1)
+				D = D + 'h1;
 		end
 		// repeat (10) #55 D = D + 'h1;
 	end
 	initial $monitor("Output = %b ", Q);
 endmodule
+
+// module Mux_16_1 (output reg [31:0] Y, input [3:0] S, input [31:0] data[0:15]);
+// 	always @ (S)
+// 		Y = data[S];
+// endmodule
 
 // module Mux_16_test;
 // 	reg [31:0] R[0:15];
