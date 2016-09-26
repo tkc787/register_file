@@ -39,8 +39,11 @@ module register_test;
 		clk = 1'b0;
 		ld = 1'b1;
 		// forever #25 D = D + 'h1;
-		repeat (10) #50 clk = ~clk;
-		repeat (10) #55 D = D + 'h1;
+		repeat (10) #50 begin 
+			clk = ~clk;
+			D = D + 'h1
+		end
+		// repeat (10) #55 D = D + 'h1;
 	end
 	initial $monitor("Output = %b ", Q);
 endmodule
