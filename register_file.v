@@ -1,53 +1,29 @@
-module binary_decoder (output reg [15:0] O, input [3:0] D, input Ld);
+module binary_decoder (output reg [15:0]Y, input [3:0] D, input ld);
 	integer result = 1;
-	always @(Ld, D) 
+	always @(ld, D) 
 	begin
-		if(Ld) begin
+		if(ld) begin
 			if(D == 0)
-				O = 1;
+				Y = 1;
 			else
-				O = result << D;
+				Y = result << D;
 		end
 		else begin
-			O = 0;
+			Y = 0;
 		end
 	end
 endmodule
 
-module Register (output reg [31:0] Q, input [31:0] D, input clk, ld);
+module register (output reg [31:0] Q, input [31:0] D, input clk, ld);
 	always @ (posedge clk, ld)
 		if(clk && ld)
 			Q = D;
-		else begin
-			Q = 32'bz;
-		end
 endmodule
 
-module register_test;
-	reg clk, ld;
-	reg [31:0] D;
-	wire [31:0] Q;
-	Register reg_test (Q, D, clk, ld);
-	initial #500 $finish;
-	initial begin
-		D = 'hFFFFFF00;
-		clk = 1'b0;
-		ld = 1'b1;
-		// forever #25 D = D + 'h1;
-		repeat (20) begin 
-			#5 clk = ~clk;
-			if(clk == 1)
-				D = D + 'h1;
-		end
-		// repeat (10) #55 D = D + 'h1;
-	end
-	initial $monitor("Output = %b ", Q);
+module Mux_16_1 (output reg [31:0] Y, input [3:0] S, input [31:0] data[0:15]);
+	always @ (S)
+		Y = data[S];
 endmodule
-
-// module Mux_16_1 (output reg [31:0] Y, input [3:0] S, input [31:0] data[0:15]);
-// 	always @ (S)
-// 		Y = data[S];
-// endmodule
 
 // module Mux_16_test;
 // 	reg [31:0] R[0:15];
@@ -67,19 +43,48 @@ endmodule
 // 	initial $monitor("Output = %b ", Y);
 // endmodule
 
-// module decoder_test;
-// 	reg Ld;
-// 	wire [15:0] O;
-// 	reg [3:0] D;
-// 	binary_decoder test(O, D, Ld);
-// 	initial #100 $finish;
-// 	initial begin
-// 		D = 'h0;
-// 		Ld = 1'b0;
-// 		// Ld = 1'b1;
-// 		repeat (15) #5 D = D + 'h1;
-// 	end
-// 	initial $monitor("Output = %b ", O);	
-// endmodule
+module decoder_test;
+	reg Ld;
+	wire [15:0] Y;
+	reg [3:0] D;
+	binary_decoder test(Y, D, Ld);
+	initial #100 $finish;
+	initial begin
+		D = 'h0;
+		ld = 1'b0;
+		// ld = 1'b1;
+		repeat (15) #5 D = D + 'h1;
+	end
+	initial $monitor("Output = %b ", O);	
+endmodule
+
+module register_test;
+	reg clk, ld;
+	reg [31:0] D;
+	wire [31:0] Q;
+	register reg_test (Q, D, clk, ld);
+	initial #500 $finish;
+	initial begin
+		D = 'hFFFFFF00;
+		clk = 1'b0;
+		ld = 1'b1;
+		// forever #25 D = D + 'h1;
+		repeat (20) begin 
+			#5 clk = ~clk;
+			if(clk == 1)
+				D = D + 'h1;
+		end
+		// repeat (10) #55 D = D + 'h1;
+	end
+	initial $monitor("Output = %b ", Q);
+endmodule
+
+module register_file;
+	reg clk, ld, [31:0] input_data, [3:0] d_select, [3:0] m1_select;
+	wire [15:0] w0, [31:0] w1, [31:0] w2;
+	binary_decoder d(w0, d_select, ld);
+	register r [0:15](w1, input_data, clk, w0);
+	Mux_16_1 mux (w2, m1_select, w1);
 
 
+endmodule
