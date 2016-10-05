@@ -89,6 +89,7 @@ module register_file_test;
 	wire [31:0] w1 [0:15];
 	wire [31:0] w2;
 	wire [31:0] w3;
+	integer index;
 	binary_decoder d (w0, d_select, ld);
 	generate
 	genvar i; 
@@ -103,25 +104,35 @@ module register_file_test;
 
 // Test Mux outputs
 	initial begin
+	// $display ("")
 		input_data = 'hFFFFFF00;
 		d_select = 'b0000;
 		clk = 1'b0;
 		ld = 1'b1;
-		#1 clk = ~clk;
+		index = 0;
+		// #1 clk = ~clk;
 		m1_select = 'b0000;
-		repeat (31) begin
+		m2_select = 'b1111;
+		repeat (32) begin
 			#1 clk = ~clk;
 			if(!clk) begin
 				input_data = input_data + 1;
 				d_select = d_select + 1;
 			end
 		end		
-		repeat (31) begin
+		$display("\nDisplaying values stored in Registers");
+
+		repeat(16) begin
+			$display("Value stored in Register%d is: %h\n", index, w1[index++]);
+		end		
+		$display("_______________________________________________________________________________________________");
+		repeat (32) begin
 			#1 clk = ~clk;
 			if(!clk) begin
 				m1_select = m1_select + 1;
+				m2_select = m2_select - 1;
 			end
 		end
 	end
-	initial $monitor("mux output = %b", w2);
+	initial $monitor("|   mux1 sel = %b   |   mux1 out = %h   | mux2 sel = %b   |   mux2 out = %h   |", m1_select, w2, m2_select,w3);
 endmodule
