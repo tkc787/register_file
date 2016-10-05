@@ -67,9 +67,12 @@ module binary_decoder (output reg Y [0:15], input [3:0] D, input ld);
 endmodule
 
 module register (output reg [31:0] Q, input [31:0] D, input clk, input ld);
-	always @ (posedge clk)
-		if(ld) begin
+	always @ (clk)
+		if(ld && clk) begin
 			Q = D;
+		end
+		else begin
+			Q = Q;
 		end
 endmodule
 
@@ -90,6 +93,7 @@ module register_file_test;
 	wire [31:0] w2;
 	wire [31:0] w3;
 	integer index;
+	integer first_time_flag;
 	binary_decoder d (w0, d_select, ld);
 	generate
 	genvar i; 
@@ -104,16 +108,14 @@ module register_file_test;
 
 // Test Mux outputs
 	initial begin
-	// $display ("")
 		input_data = 'hFFFFFF00;
 		d_select = 'b0000;
 		clk = 1'b0;
 		ld = 1'b1;
 		index = 0;
+		first_time_flag = 1;
 		// #1 clk = ~clk;
-		m1_select = 'b0000;
-		m2_select = 'b1111;
-		repeat (32) begin
+		repeat (31) begin
 			#1 clk = ~clk;
 			if(!clk) begin
 				input_data = input_data + 1;
@@ -123,16 +125,20 @@ module register_file_test;
 		$display("\nDisplaying values stored in Registers");
 
 		repeat(16) begin
-			$display("Value stored in Register%d is: %h\n", index, w1[index++]);
-		end		
-		$display("_______________________________________________________________________________________________");
-		repeat (32) begin
+			$display("Value stored in Register%0d is: %h\n", index, w1[index]);
+			index = index + 1;
+		end	
+		$display("-----------------------------------------------------------------------------------------------");
+		m1_select = 'b0000;
+		m2_select = 'b1111;
+		repeat (30) begin
 			#1 clk = ~clk;
 			if(!clk) begin
 				m1_select = m1_select + 1;
 				m2_select = m2_select - 1;
 			end
 		end
+		$display("-----------------------------------------------------------------------------------------------");
 	end
 	initial $monitor("|   mux1 sel = %b   |   mux1 out = %h   | mux2 sel = %b   |   mux2 out = %h   |", m1_select, w2, m2_select,w3);
 endmodule
